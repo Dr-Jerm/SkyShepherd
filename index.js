@@ -157,6 +157,8 @@ webpackJsonp([0,2],[
 	    _this.world.broadphase = new _cannon2.default.NaiveBroadphase();
 	    _this.world.solver.iterations = 10;
 	
+	    _this.offsety = 1.5;
+	
 	    var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10000);
 	    var listener = new THREE.AudioListener();
 	    camera.add(listener);
@@ -198,18 +200,18 @@ webpackJsonp([0,2],[
 	    // let sheep = new Sheep();
 	    // this.add(sheep.object3D);
 	    _this.groundPlane = new _GroundPlane2.default(_this, _this.world);
-	    _this.groundPlane.object3D.position.set(0, 1.7, 0);
-	    _this.groundPlane.body.position.set(0, 1.7, 0);
+	    _this.groundPlane.object3D.position.set(0, 1.7 - _this.offsety, 0);
+	    _this.groundPlane.body.position.set(0, 1.7 - _this.offsety, 0);
 	
 	    _this.ripplePlane = new _RipplePlane2.default(_this, _this.world);
 	    _this.tickingActors.push(_this.ripplePlane);
-	    _this.ripplePlane.object3D.position.set(0, 2.2, 0);
+	    _this.ripplePlane.object3D.position.set(0, 2.2 - _this.offsety, 0);
 	    _this.ripplePlane.object3D.scale.set(0.06, 0.06, 0.06);
 	
-	    _this.pen = new _Pen2.default(_this, _this.world, new THREE.Vector3(0, 2.18, 0));
+	    _this.pen = new _Pen2.default(_this, _this.world, new THREE.Vector3(0, 2.18 - _this.offsety, 0));
 	
 	    _this.scoreSign = new _DynamicSign2.default(_this, _this.world);
-	    _this.scoreSign.object3D.position.set(-2.2, 0, -5);
+	    _this.scoreSign.object3D.position.set(-2.2, 0 - _this.offsety, -5);
 	    _this.scoreSign.object3D.rotation.y = 0.3;
 	    _this.scoreSign.setMessage("Score");
 	    _this.scoreSign.setNumber(0);
@@ -217,7 +219,7 @@ webpackJsonp([0,2],[
 	    _this.scoreSign.visible = false;
 	
 	    _this.timeSign = new _DynamicSign2.default(_this, _this.world);
-	    _this.timeSign.object3D.position.set(2.5, 0, -5);
+	    _this.timeSign.object3D.position.set(2.5, 0 - _this.offsety, -5);
 	    _this.timeSign.object3D.rotation.y = -0.2;
 	    _this.timeSign.setMessage("Time");
 	    _this.timeSign.setNumber(window.game.timeRemaining);
@@ -232,13 +234,14 @@ webpackJsonp([0,2],[
 	      _this.signs[i].object3D.position.x = 8 * Math.cos(i * 2 * Math.PI / sign_count);
 	      _this.signs[i].object3D.position.z = 8 * Math.sin(i * 2 * Math.PI / sign_count);
 	
+	      _this.signs[i].object3D.position.y = -_this.offsety;
 	      _this.signs[i].object3D.rotation.y = angle;
 	    }
 	
-	    _this.numSheep = 30;
+	    _this.numSheep = 50;
 	    for (var i = 0; i < _this.numSheep; i++) {
 	      var sheep = new _Sheep2.default(_this, _this.world);
-	      sheep.object3D.position.y = 2.23;
+	      sheep.object3D.position.y = 2.23 - _this.offsety;
 	      _this.tickingActors.push(sheep);
 	    }
 	
@@ -270,8 +273,8 @@ webpackJsonp([0,2],[
 	  }, {
 	    key: 'tick',
 	    value: function tick(delta) {
-	      // this.world.step(delta);
-	      this.world.step(1 / 60);
+	      this.world.step(delta);
+	      //this.world.step(1/60);
 	      this.controls.update();
 	      tickActors(this.tickingActors, delta);
 	    }
@@ -490,8 +493,8 @@ webpackJsonp([0,2],[
 	    _this.initializedCount = 0;
 	
 	    _this.impactConfig = {
-	      scalar: 2000.0,
-	      yBaseForce: 8000.0,
+	      forwardScalar: 2500.0,
+	      yBaseForce: 10000.0,
 	      maxRange: 2,
 	      forceThreshold: 1.0
 	    };
@@ -525,9 +528,8 @@ webpackJsonp([0,2],[
 	        var _distanceScale = Math.abs(_diff.length() / this.impactConfig.maxRange - 1) * floatScale;
 	        // _distanceScale = 1/(Math.pow(_distanceScale, 2));
 	
-	        //let _force = _diff.clone().normalize().multiplyScalar(_distanceScale).multiplyScalar(this.impactConfig.scalar);
 	        // Scale forward force
-	        var _force = _diff.clone().normalize().multiplyScalar(_distanceScale).multiplyScalar(this.impactConfig.scalar);
+	        var _force = _diff.clone().normalize().multiplyScalar(_distanceScale).multiplyScalar(this.impactConfig.forwardScalar);
 	
 	        // Set and scale height
 	        _force.y = this.impactConfig.yBaseForce * _distanceScale;
@@ -536,7 +538,6 @@ webpackJsonp([0,2],[
 	        //console.log(_force.length())
 	        if (_force.length() < this.impactConfig.forceThreshold) continue;
 	
-	        //let force = new CANNON.Vec3(_force.x,Math.abs(_force.y) * this.impactConfig.yScalar,_force.z);
 	        var force = new _cannon2.default.Vec3(_force.x, _force.y, _force.z);
 	        if (ticker instanceof _Sheep2.default) {
 	          ticker.bump(force, vector3ImpactLocation);
@@ -1779,7 +1780,7 @@ webpackJsonp([0,2],[
 	        var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10000);
 	        var listener = new THREE.AudioListener();
 	        camera.add(listener);
-	        camera.position.y = 10;
+	        camera.position.y = 1;
 	        //camera.rotation.x = 10;
 	        _this.controls = new THREE.OrbitControls(camera, renderer.domElement);
 	        _this.controls.enableZoom = true;
